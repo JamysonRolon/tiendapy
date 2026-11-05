@@ -1,3 +1,4 @@
+# Este archivo conecta las preguntas del menú con las funciones de cada módulo.
 from datetime import date
 from tabulate import tabulate
 
@@ -10,10 +11,12 @@ from validaciones import leer_texto, leer_numero, confirmar, categoria_valida
 
 
 def registrar(inventario):
+    # Pide los siete atributos. El producto se agrega cuando todos son válidos.
     codigo = leer_texto("Código: ").upper()
     if codigo in inventario:
         raise ValueError("Ya existe un producto con ese código.")
     nombre = leer_texto("Nombre: ")
+    # Una categoría desconocida se vuelve a pedir sin salir del registro.
     while True:
         try:
             categoria = categoria_valida(leer_texto("Categoría (Lacteos, Bebidas, Aseo, Abarrotes, Snacks): "))
@@ -21,6 +24,7 @@ def registrar(inventario):
         except ValueError as error:
             print(error)
     precio = leer_numero("Precio en COP (usa punto para los decimales): ")
+    # Un precio positivo muy pequeño podría convertirse en cero al redondearlo.
     if round(precio, 2) == 0:
         raise ValueError("El precio debe ser al menos 0.01 COP.")
     producto = {"codigo": codigo, "nombre": nombre, "categoria": categoria,
@@ -32,6 +36,7 @@ def registrar(inventario):
 
 
 def consultar(inventario):
+    # El submenú decide qué productos enviar a la misma función de presentación.
     opcion = input("1. Por código  2. Por categoría  3. Todos: ").strip()
     if opcion == "1":
         mostrar_productos([buscar_codigo(inventario, leer_texto("Código: "))])
@@ -44,14 +49,17 @@ def consultar(inventario):
 
 
 def vender(inventario, historial):
+    # La venta tiene tres etapas: armar el carrito, cobrar y confirmar el guardado.
     carrito = {}
     while True:
         codigo = input("Código del producto (fin para cobrar, cancelar para volver): ").strip().upper()
+        # Todavía no se ha descontado nada: cancelar solo termina esta función.
         if codigo == "CANCELAR":
             print("Venta cancelada. No se cambió el stock.")
             return
         if codigo == "FIN":
             try:
+                # No permite pasar al cobro con un carrito vacío o inválido.
                 resumen = calcular_venta(inventario, carrito)
                 break
             except ValueError as error:
@@ -64,6 +72,7 @@ def vender(inventario, historial):
             print("Producto agregado.")
         except ValueError as error:
             print(error)
+    # El detalle permite revisar cantidades y valores antes de recibir el pago.
     filas = []
     for codigo, cantidad in carrito.items():
         p = inventario[codigo]
@@ -72,6 +81,7 @@ def vender(inventario, historial):
     print(f'Subtotal: ${resumen["subtotal"]:.2f}')
     print(f'Descuento ({resumen["porcentaje"]}%): ${resumen["descuento"]:.2f}')
     print(f'Total: ${resumen["total"]:.2f}')
+    # Si el pago no alcanza, se repite solo el cobro, no la selección de productos.
     while True:
         pago = leer_numero("Pago recibido en COP: ")
         try:
@@ -83,8 +93,10 @@ def vender(inventario, historial):
     if not confirmar("¿Confirmar venta?"):
         print("Venta cancelada. No se cambió el stock.")
         return
+    # Se escribe en disco antes de cambiar los datos de la sesión.
     venta, nuevo, cambio = preparar_venta(inventario, carrito, pago)
     guardar_compra(inventario, nuevo, venta)
+    # clear y update conservan el mismo diccionario que recibió la función.
     inventario.clear()
     inventario.update(nuevo)
     historial.append(venta)
@@ -92,11 +104,13 @@ def vender(inventario, historial):
 
 
 def main():
+    # Carga los archivos una sola vez y mantiene el menú hasta que se elige salir.
     print("TIENDAPY - Tienda Don Aurelio")
     try:
         inventario = cargar_inventario()
         historial = cargar_ventas()
     except OSError as error:
+        # No se continúa con datos vacíos si hubo un problema de lectura o permisos.
         print("No se pudieron leer los archivos. Revisa los permisos:", error)
         return
     while True:
@@ -110,6 +124,7 @@ def main():
             elif opcion == "2":
                 consultar(inventario)
             elif opcion == "3":
+                # Muestra el producto actual antes de pedir sus nuevos valores.
                 codigo = leer_texto("Código: ")
                 mostrar_productos([buscar_codigo(inventario, codigo)])
                 precio = round(leer_numero("Nuevo precio: "), 2)
@@ -117,6 +132,7 @@ def main():
                 modificar_producto(inventario, codigo, precio, stock)
                 print("Producto modificado.")
             elif opcion == "4":
+                # La confirmación evita borrar un producto por una selección accidental.
                 codigo = leer_texto("Código: ")
                 mostrar_productos([buscar_codigo(inventario, codigo)])
                 if confirmar("¿Eliminar este producto?"):
@@ -127,6 +143,7 @@ def main():
             elif opcion == "6":
                 mostrar_alertas(inventario)
             elif opcion == "7":
+                # Enter usa la fecha de hoy; una fecha escrita debe ser válida.
                 fecha = input("Fecha AAAA-MM-DD (Enter para hoy): ").strip()
                 if fecha:
                     if date.fromisoformat(fecha).isoformat() != fecha:
@@ -136,16 +153,19 @@ def main():
                 guardar_inventario(inventario)
                 print("Inventario guardado.")
             elif opcion == "0":
+                # Si guardar falla, el except informa y el menú sigue disponible.
                 guardar_inventario(inventario)
                 print("Inventario guardado. Hasta luego.")
                 break
             else:
                 print("Opción inválida. Elige un número del menú.")
         except ValueError as error:
+            # Captura las reglas que usan raise y devuelve el control al menú.
             print("No se pudo completar la operación:", error)
         except OSError as error:
             print("No se pudo guardar. Revisa el espacio y los permisos:", error)
         except (EOFError, KeyboardInterrupt):
+            # Ctrl+C o el cierre de la entrada intentan guardar antes de terminar.
             print("\nEntrada interrumpida. Guardando inventario...")
             try:
                 guardar_inventario(inventario)
@@ -154,5 +174,6 @@ def main():
             break
 
 
+# Solo abre el menú al ejecutar este archivo, no al importarlo desde las pruebas.
 if __name__ == "__main__":
     main()

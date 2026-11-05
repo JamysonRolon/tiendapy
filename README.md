@@ -25,6 +25,8 @@ No hace falta activar el entorno ni cambiar la política de ejecución de PowerS
 
 En este equipo ya quedó creado el entorno, con la dependencia instalada. Puedes abrir la aplicación con iniciar.bat o ejecutar el último comando desde la carpeta del proyecto. Si mueves el proyecto a otro equipo, crea nuevamente el entorno: los entornos virtuales no son portables.
 
+iniciar.bat es un archivo de comandos de Windows. Al hacer doble clic, se ubica en la carpeta del proyecto y ejecuta src/main.py con el Python del entorno virtual. Al terminar, deja la ventana abierta para que puedas leer los mensajes. Es opcional: puedes ejecutar el mismo programa desde la terminal con el comando de Python indicado arriba. El código de la aplicación está en los archivos .py de src.
+
 En Linux o macOS:
 
 ```bash

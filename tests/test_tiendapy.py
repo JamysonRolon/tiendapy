@@ -1,3 +1,5 @@
+# Estas pruebas usan unittest, incluido en Python, y archivos temporales.
+# No modifican los archivos de ejemplo que están en data.
 import contextlib
 import io
 from pathlib import Path
@@ -7,6 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+# Permite importar los módulos de src al ejecutar las pruebas desde esta carpeta.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from inventario import (registrar_producto, buscar_codigo, buscar_categoria,
@@ -20,17 +23,22 @@ import main
 
 
 def producto(codigo="LAC001", precio=5000, stock=20):
+    # Crea un producto de prueba; los argumentos permiten variar cada caso.
     return {"codigo": codigo, "nombre": "Leche", "categoria": "Lacteos",
             "precio": precio, "stock": stock, "stock_minimo": 3,
             "proveedor": "Proveedor de prueba"}
 
 
 class TiendaPruebas(unittest.TestCase):
+    # unittest ejecuta los métodos cuyo nombre empieza por test_.
     def setUp(self):
+        # Antes de cada prueba prepara un inventario nuevo, separado de las demás.
         self.inventario = {}
         registrar_producto(self.inventario, producto())
 
     def test_crud_y_busquedas(self):
+        # assertEqual compara el resultado con lo esperado.
+        # assertRaises comprueba que una regla rechace una operación incorrecta.
         self.assertEqual(buscar_codigo(self.inventario, "lac001")["stock"], 20)
         self.assertEqual(len(buscar_categoria(self.inventario, "Lácteos")), 1)
         self.assertEqual(buscar_categoria(self.inventario, "Otra"), [])
@@ -44,6 +52,7 @@ class TiendaPruebas(unittest.TestCase):
         self.assertEqual(self.inventario, {})
 
     def test_valores_invalidos_no_modifican_producto(self):
+        # Un rechazo no debe dejar un precio o stock cambiado a medias.
         for precio, stock in [(0, 3), (-1, 3), (5, 0), (5, -1), (float("nan"), 2)]:
             with self.subTest(precio=precio, stock=stock):
                 with self.assertRaises(ValueError):
@@ -58,6 +67,8 @@ class TiendaPruebas(unittest.TestCase):
                 registrar_producto(self.inventario, p)
 
     def test_descuentos_en_los_limites(self):
+        # Revisa los valores justo antes de los umbrales, en ellos y por encima.
+        # subTest identifica cuál de los casos falla sin ocultar los demás.
         for subtotal, descuento in [(49999, 0), (50000, 2500), (99999, 4999.95),
                                      (100000, 10000), (150000, 15000)]:
             with self.subTest(subtotal=subtotal):
@@ -67,6 +78,7 @@ class TiendaPruebas(unittest.TestCase):
                 self.assertEqual(resumen["total"], round(subtotal - descuento, 2))
 
     def test_carrito_repetido_no_sobrevende(self):
+        # Sumar dos entradas del mismo producto también debe respetar el stock.
         carrito = {}
         agregar_al_carrito(self.inventario, carrito, "lac001", 12)
         with self.assertRaises(ValueError):
@@ -80,6 +92,7 @@ class TiendaPruebas(unittest.TestCase):
             calcular_venta(self.inventario, {})
 
     def test_pago_y_venta_de_varios_productos(self):
+        # Comprueba el cambio y que preparar la venta conserve el inventario original.
         registrar_producto(self.inventario, producto("BEB001", 3000, 5))
         carrito = {"LAC001": 2, "BEB001": 3}
         with self.assertRaises(ValueError):
@@ -91,6 +104,8 @@ class TiendaPruebas(unittest.TestCase):
         self.assertEqual(calcular_cambio(19000, 19000), 0)
 
     def test_persistencia_y_agotados(self):
+        # TemporaryDirectory crea una carpeta que se borra al terminar el bloque.
+        # Se venden todas las unidades, se recargan y se revisa la alerta AGOTADO.
         with tempfile.TemporaryDirectory() as carpeta:
             carpeta = Path(carpeta)
             venta, nuevo, _ = preparar_venta(self.inventario, {"LAC001": 20}, 100000)
@@ -106,6 +121,8 @@ class TiendaPruebas(unittest.TestCase):
             self.assertIn("AGOTADO", salida.getvalue())
 
     def test_archivos_ausentes_y_corruptos(self):
+        # Incluye líneas válidas entre líneas dañadas para comprobar que la carga siga.
+        # redirect_stdout captura los avisos en memoria en lugar de mostrarlos.
         with tempfile.TemporaryDirectory() as carpeta, contextlib.redirect_stdout(io.StringIO()) as salida:
             inv = Path(carpeta) / "inventario.txt"
             ven = Path(carpeta) / "ventas.txt"
@@ -125,6 +142,7 @@ class TiendaPruebas(unittest.TestCase):
             self.assertEqual(len(cargar_ventas(ven)), 2)
 
     def test_error_de_guardado_no_descontar(self):
+        # patch simula un disco lleno sin provocar un problema real en el equipo.
         with tempfile.TemporaryDirectory() as carpeta:
             ruta = Path(carpeta) / "inventario.txt"
             guardar_inventario(self.inventario, ruta)
@@ -135,6 +153,7 @@ class TiendaPruebas(unittest.TestCase):
             self.assertEqual(cargar_inventario(ruta), self.inventario)
 
     def test_cierre_fecha_empates_y_productos_eliminados(self):
+        # Usa fechas fijas para que el resultado no dependa del día de ejecución.
         registrar_producto(self.inventario, producto("B", 2000, 3))
         registrar_producto(self.inventario, producto("C", 2000, 3))
         ventas = [{"fecha": "2026-11-04", "total": 14000,
@@ -149,6 +168,7 @@ class TiendaPruebas(unittest.TestCase):
         self.assertEqual(len(alertas_stock(self.inventario)["Proveedor de prueba"]), 2)
 
     def test_captura_numeros_y_cancelacion(self):
+        # patch sustituye input; side_effect entrega las respuestas en orden.
         with patch("builtins.input", side_effect=["hola", "-1", "0", "nan", "3"]), contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(leer_numero("Cantidad: ", True), 3)
         for entradas in [["LAC001", "2", "cancelar"], ["LAC001", "2", "fin", "1", "10000", "n"]]:
@@ -159,6 +179,7 @@ class TiendaPruebas(unittest.TestCase):
                 self.assertEqual(self.inventario["LAC001"]["stock"], 20)
 
     def test_menu_confirmacion_y_reinicio_real(self):
+        # subprocess abre otro Python para comprobar un cierre y una reapertura reales.
         with tempfile.TemporaryDirectory() as carpeta:
             carpeta = Path(carpeta)
             guardar_inventario(self.inventario, carpeta / "inventario.txt")
@@ -180,5 +201,6 @@ class TiendaPruebas(unittest.TestCase):
             self.assertEqual(len(cargar_ventas(carpeta / "ventas.txt")), 1)
 
 
+# Permite ejecutar también este archivo directamente para iniciar las pruebas.
 if __name__ == "__main__":
     unittest.main()

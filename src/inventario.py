@@ -1,9 +1,12 @@
-from tabulate import tabulate
+# El inventario es un diccionario: cada código apunta al diccionario del producto.
+from tabulate import tabulate  # Presenta las filas como una tabla en consola.
 
 from validaciones import texto_valido, numero_positivo, categoria_valida, normalizar
 
 
 def validar_producto(producto, desde_archivo=False):
+    # Revisa todos los campos y devuelve un nuevo diccionario con sus tipos.
+    # upper convierte el código a mayúsculas para tratar lac001 y LAC001 igual.
     return {
         "codigo": texto_valido(producto["codigo"]).upper(),
         "nombre": texto_valido(producto["nombre"]),
@@ -17,6 +20,7 @@ def validar_producto(producto, desde_archivo=False):
 
 
 def registrar_producto(inventario, producto):
+    # Solo agrega el producto después de validarlo y comprobar que no se repite.
     nuevo = validar_producto(producto)
     if nuevo["codigo"] in inventario:
         raise ValueError("Ya existe un producto con ese código.")
@@ -24,6 +28,7 @@ def registrar_producto(inventario, producto):
 
 
 def buscar_codigo(inventario, codigo):
+    # Devuelve el producto existente; el menú captura el error si no lo encuentra.
     codigo = codigo.strip().upper()
     if codigo not in inventario:
         raise ValueError("No se encontró un producto con ese código.")
@@ -31,11 +36,14 @@ def buscar_codigo(inventario, codigo):
 
 
 def buscar_categoria(inventario, categoria):
+    # Esta lista por comprensión recorre los productos y conserva los que coinciden.
+    # Si no hay coincidencias devuelve una lista vacía, sin producir un error.
     return [p for p in inventario.values()
             if normalizar(p["categoria"]) == normalizar(categoria)]
 
 
 def modificar_producto(inventario, codigo, precio, stock):
+    # producto se refiere al mismo diccionario que está guardado en inventario.
     producto = buscar_codigo(inventario, codigo)
     # Revisar ambos antes de cambiar algo evita una modificación a medias.
     precio = numero_positivo(precio)
@@ -45,14 +53,17 @@ def modificar_producto(inventario, codigo, precio, stock):
 
 
 def eliminar_producto(inventario, codigo):
+    # La búsqueda comprueba que exista antes de quitarlo con del.
     producto = buscar_codigo(inventario, codigo)
     del inventario[producto["codigo"]]
 
 
 def mostrar_productos(productos):
+    # Recibe una lista de productos y muestra sus siete atributos.
     if not productos:
         print("No hay productos para mostrar.")
         return
+    # Cada lista interior será una fila; los encabezados indican sus columnas.
     filas = []
     for p in productos:
         filas.append([p["codigo"], p["nombre"], p["categoria"], p["precio"],

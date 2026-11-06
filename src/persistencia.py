@@ -1,4 +1,4 @@
-# Persistir significa guardar los datos para recuperarlos al abrir de nuevo.
+# Aca guardamos los datos para que sigan cuando abramos el programa otra vez.
 from datetime import date
 from pathlib import Path
 import os
@@ -93,7 +93,7 @@ def cargar_ventas(ruta=None):
 
 
 def registrar_venta(venta, ruta=None):
-    # Agrega una línea al historial sin borrar las ventas anteriores.
+    # La venta se agrega al final, asi no borramos las que ya estaban.
     ruta = Path(ruta) if ruta is not None else DATA / "ventas.txt"
     ruta.parent.mkdir(parents=True, exist_ok=True)
     # join une todos los pares código:cantidad con un punto y coma entre ellos.

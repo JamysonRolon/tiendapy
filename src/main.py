@@ -1,4 +1,4 @@
-# Este archivo conecta las preguntas del menú con las funciones de cada módulo.
+# Desde aca se maneja el menú y se llaman las funciones de los otros archivos.
 from datetime import date
 from tabulate import tabulate
 
@@ -11,7 +11,7 @@ from validaciones import leer_texto, leer_numero, confirmar, categoria_valida
 
 
 def registrar(inventario):
-    # Pide los siete atributos. El producto se agrega cuando todos son válidos.
+    # Pedimos los datos del producto, si todo esta bien se agrega al inventario.
     codigo = leer_texto("Código: ").upper()
     if codigo in inventario:
         raise ValueError("Ya existe un producto con ese código.")
@@ -49,7 +49,7 @@ def consultar(inventario):
 
 
 def vender(inventario, historial):
-    # La venta tiene tres etapas: armar el carrito, cobrar y confirmar el guardado.
+    # Primero armamos el carrito, despues cobramos y al final confirmamos la venta.
     carrito = {}
     while True:
         codigo = input("Código del producto (fin para cobrar, cancelar para volver): ").strip().upper()
@@ -104,7 +104,7 @@ def vender(inventario, historial):
 
 
 def main():
-    # Carga los archivos una sola vez y mantiene el menú hasta que se elige salir.
+    # Cargamos la informacion una vez y dejamos el menú hasta que se elija salir.
     print("TIENDAPY - Tienda Don Aurelio")
     try:
         inventario = cargar_inventario()

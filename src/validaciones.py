@@ -54,7 +54,7 @@ def numero_positivo(valor, entero=False, permitir_cero=False):
 
 
 def leer_numero(mensaje, entero=False, permitir_cero=False):
-    # Repite la pregunta hasta obtener un número que cumpla las reglas.
+    # Si el dato esta mal se vuelve a preguntar hasta que sea válido.
     # El except muestra el error y deja que el while vuelva a pedir la entrada.
     while True:
         try:

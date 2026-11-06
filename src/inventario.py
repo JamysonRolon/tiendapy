@@ -5,7 +5,7 @@ from validaciones import texto_valido, numero_positivo, categoria_valida, normal
 
 
 def validar_producto(producto, desde_archivo=False):
-    # Revisa todos los campos y devuelve un nuevo diccionario con sus tipos.
+    # Aca revisamos los datos y armamos el diccionario con los tipos que necesitamos.
     # upper convierte el código a mayúsculas para tratar lac001 y LAC001 igual.
     return {
         "codigo": texto_valido(producto["codigo"]).upper(),
@@ -20,7 +20,7 @@ def validar_producto(producto, desde_archivo=False):
 
 
 def registrar_producto(inventario, producto):
-    # Solo agrega el producto después de validarlo y comprobar que no se repite.
+    # Antes de agregarlo revisamos que el codigo no esté repetido.
     nuevo = validar_producto(producto)
     if nuevo["codigo"] in inventario:
         raise ValueError("Ya existe un producto con ese código.")

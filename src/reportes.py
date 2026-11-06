@@ -17,7 +17,7 @@ def alertas_stock(inventario):
 
 
 def mostrar_alertas(inventario):
-    # Presenta una tabla por proveedor y distingue los productos agotados.
+    # Mostramos una tabla por proveedor y señalamos cual producto se agotó.
     grupos = alertas_stock(inventario)
     if not grupos:
         print("No hay productos con stock bajo.")

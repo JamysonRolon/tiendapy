@@ -6,7 +6,7 @@ from validaciones import numero_positivo
 
 
 def agregar_al_carrito(inventario, carrito, codigo, cantidad):
-    # El carrito relaciona códigos con cantidades, sin descontar stock todavía.
+    # Guardamos el codigo y la cantidad en el carrito, el stock todavia no cambia.
     producto = buscar_codigo(inventario, codigo)
     cantidad = numero_positivo(cantidad, True)
     codigo = producto["codigo"]
@@ -30,7 +30,7 @@ def calcular_venta(inventario, carrito):
             raise ValueError("No alcanza el stock de " + producto["nombre"])
         subtotal += round(producto["precio"] * cantidad, 2)
     subtotal = round(numero_positivo(subtotal), 2)
-    # Se revisa primero el descuento mayor y se aplica solo uno de los dos.
+    # Miramos primero el descuento mas grande para no aplicar los dos.
     porcentaje = 0
     if subtotal >= 100000:
         porcentaje = 10

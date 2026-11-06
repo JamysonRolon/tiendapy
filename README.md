@@ -23,17 +23,7 @@ Instala la dependencia y abre el programa:
 
 No hace falta activar el entorno ni cambiar la política de ejecución de PowerShell. Si tu instalación usa el comando python en lugar de py, puedes usar python para crear el entorno.
 
-En este equipo ya quedó creado el entorno, con la dependencia instalada. Puedes abrir la aplicación con iniciar.bat o ejecutar el último comando desde la carpeta del proyecto. Si mueves el proyecto a otro equipo, crea nuevamente el entorno: los entornos virtuales no son portables.
-
-iniciar.bat es un archivo de comandos de Windows. Al hacer doble clic, se ubica en la carpeta del proyecto y ejecuta src/main.py con el Python del entorno virtual. Al terminar, deja la ventana abierta para que puedas leer los mensajes. Es opcional: puedes ejecutar el mismo programa desde la terminal con el comando de Python indicado arriba. El código de la aplicación está en los archivos .py de src.
-
-En Linux o macOS:
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python src/main.py
-```
+En este equipo ya quedó creado el entorno, con la dependencia instalada. Si mueves el proyecto a otro equipo, crea nuevamente el entorno: los entornos virtuales no son portables.
 
 ## Opciones del menú
 
@@ -45,7 +35,7 @@ python3 -m venv .venv
 | 4 | Eliminar un producto después de confirmar. |
 | 5 | Agregar varios productos a una venta, recibir el pago y calcular el cambio. |
 | 6 | Ver productos con stock bajo o agotado, agrupados por proveedor. |
-| 7 | Consultar el cierre de hoy o de otra fecha. |
+| 7 | Consultar el cierre del día. |
 | 8 | Guardar el inventario sin salir. |
 | 0 | Guardar el inventario y cerrar. |
 
@@ -88,10 +78,7 @@ Los descuentos no se acumulan. Los importes se calculan con float, como pide el 
 ```text
 tiendapy/
   README.md
-  GUIA_DEL_CODIGO.md
-  VERIFICACION.md
   requirements.txt
-  iniciar.bat
   data/
     inventario.txt
     ventas.txt
@@ -102,8 +89,6 @@ tiendapy/
     reportes.py
     persistencia.py
     validaciones.py
-  tests/
-    test_tiendapy.py
 ```
 
 El inventario usa siete campos separados por |. El historial conserva fecha, total y los pares de código y cantidad, con los separadores indicados en el PDF. No se permite introducir esos separadores dentro de los textos de un producto.
@@ -112,17 +97,9 @@ Las rutas se resuelven desde la ubicación del programa. Si falta el inventario,
 
 ## Qué muestra el cierre
 
-El total vendido es la suma de los totales después del descuento. El ticket promedio divide ese valor entre las transacciones de la fecha elegida. El producto más vendido se determina por unidades y, si hay empate, se muestran todos. Los productos sin ventas son los del inventario actual que no tuvieron movimiento en esa fecha. También se muestran las unidades vendidas por categoría.
+El total vendido es la suma de los totales después del descuento. El ticket promedio divide ese valor entre las transacciones de hoy. El producto más vendido se determina por unidades y, si hay empate, se muestran todos. Los productos sin ventas son los del inventario actual que no tuvieron movimiento hoy. También se muestran las unidades vendidas por categoría.
 
 El formato obligatorio del historial solo guarda códigos y cantidades, sin una copia del nombre o la categoría. Si se elimina un producto vendido, el cierre conserva sus unidades y el total, pero lo identifica por código como Producto eliminado. Para esos productos la categoría original no puede recuperarse. No reutilices códigos eliminados para productos distintos.
-
-## Comprobar el funcionamiento
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
-
-Las pruebas usan datos temporales y no cambian los ejemplos. VERIFICACION.md relaciona los criterios del PDF con el código y los casos revisados.
 
 El guardado usa un archivo temporal para evitar reemplazar el inventario con una escritura incompleta. Si falla el registro de una venta, se intenta recuperar el inventario anterior y se informa el error. Es una aplicación para una sola consola: no coordina varios procesos ni garantiza una transacción entre los dos archivos frente a un corte de energía. Conviene conservar copias de data.
 

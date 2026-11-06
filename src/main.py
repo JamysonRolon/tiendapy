@@ -1,5 +1,4 @@
 # Desde aca se maneja el menú y se llaman las funciones de los otros archivos.
-from datetime import date
 from tabulate import tabulate
 
 from inventario import (registrar_producto, buscar_codigo, buscar_categoria,
@@ -143,12 +142,8 @@ def main():
             elif opcion == "6":
                 mostrar_alertas(inventario)
             elif opcion == "7":
-                # Enter usa la fecha de hoy; una fecha escrita debe ser válida.
-                fecha = input("Fecha AAAA-MM-DD (Enter para hoy): ").strip()
-                if fecha:
-                    if date.fromisoformat(fecha).isoformat() != fecha:
-                        raise ValueError("Usa el formato AAAA-MM-DD.")
-                mostrar_cierre(inventario, historial, fecha or None)
+                # El cierre muestra las ventas de hoy, como pide el proyecto.
+                mostrar_cierre(inventario, historial)
             elif opcion == "8":
                 guardar_inventario(inventario)
                 print("Inventario guardado.")

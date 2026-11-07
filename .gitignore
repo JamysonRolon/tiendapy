@@ -2,3 +2,25 @@
 __pycache__/
 *.pyc
 *.tmp
+
+# Credenciales y configuracion local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials-*.json
+client_secret*.json
+secrets.json
+secrets.*.json
+.secrets/
+
+# Archivos locales
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

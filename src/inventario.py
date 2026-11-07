@@ -1,5 +1,5 @@
-# El inventario es un diccionario: cada código apunta al diccionario del producto.
-from tabulate import tabulate  # Presenta las filas como una tabla en consola.
+# El inventario es un diccionario: cada código apunta al diccionario del producto
+from tabulate import tabulate  # Presenta las filas como una tabla en consola
 
 from validaciones import texto_valido, numero_positivo, categoria_valida, normalizar
 
